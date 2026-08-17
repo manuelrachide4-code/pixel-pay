@@ -102,19 +102,39 @@ function Dashboard() {
     },
   });
 
+  const { data: payments } = useQuery({
+    queryKey: ["payments", "summary"],
+    queryFn: async () => {
+      const since = new Date();
+      since.setHours(0, 0, 0, 0);
+      const { data, error } = await supabase
+        .from("payments")
+        .select("amount, status, created_at")
+        .gte("created_at", since.toISOString());
+      if (error) throw error;
+      return data;
+    },
+    refetchInterval: 30000,
+  });
+
+  const paidToday = (payments ?? []).filter((p) => p.status === "paid");
+  const pendingToday = (payments ?? []).filter((p) => p.status === "pending");
+  const revenueToday = paidToday.reduce((sum, p) => sum + Number(p.amount), 0);
+
   const cards = [
-    { label: "Vendas hoje", value: "34", delta: "+18%", icon: ShoppingCart },
-    { label: "Receita total", value: mzn(Number(profile?.total_revenue ?? 257850)), delta: "+12%", icon: TrendingUp },
+    { label: "Vendas hoje", value: String(paidToday.length), delta: `${pendingToday.length} pendentes`, icon: ShoppingCart },
+    { label: "Receita hoje", value: mzn(revenueToday), delta: "PayMoz", icon: TrendingUp },
+    { label: "Receita total", value: mzn(Number(profile?.total_revenue ?? 0)), delta: "Acumulado", icon: TrendingUp },
     {
       label: "Saldo disponível",
-      value: mzn(Number(profile?.available_balance ?? 84300)),
+      value: mzn(Number(profile?.available_balance ?? 0)),
       delta: "Liquidação D+1",
       icon: Wallet,
     },
-    { label: "Saques pendentes", value: mzn(Number(profile?.blocked_balance ?? 12000)), delta: "2 pedidos", icon: Banknote },
-    { label: "Produtos activos", value: "7", delta: "3 em destaque", icon: Package },
+    { label: "Saldo bloqueado", value: mzn(Number(profile?.blocked_balance ?? 0)), delta: "Em retenção", icon: Banknote },
     { label: "Conversão", value: "6,4%", delta: "+0,8 p.p.", icon: Percent },
   ];
+
 
   return (
     <AppShell title="Dashboard">
