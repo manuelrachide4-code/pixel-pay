@@ -17,7 +17,7 @@ import {
   ArrowUpRight,
   BadgeCheck,
   Banknote,
-  Package,
+  
   Percent,
   ShoppingCart,
   TrendingUp,
