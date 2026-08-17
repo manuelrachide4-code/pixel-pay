@@ -18,14 +18,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" as const, active: true },
-  { label: "Produtos", icon: Package },
-  { label: "Vendas", icon: BarChart3 },
+  { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" as const },
+  { label: "Produtos", icon: Package, to: "/produtos" as const },
+  { label: "Vendas", icon: BarChart3, to: "/vendas" as const },
   { label: "Carteira", icon: Wallet },
   { label: "Saques", icon: CreditCard },
   { label: "Afiliados", icon: Users },
   { label: "API & Webhooks", icon: Webhook },
 ];
+
 
 export function AppShell({ children, title }: { children: ReactNode; title: string }) {
   const [open, setOpen] = useState(false);
