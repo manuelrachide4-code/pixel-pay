@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/produtos")({
   head: () => ({
@@ -51,11 +52,28 @@ const mzn = (v: number) =>
     .format(v)
     .replace("MTn", "MZN");
 
+function ProductThumb({ path, alt }: { path: string | null; alt: string }) {
+  const { data: url } = useQuery({
+    queryKey: ["product-image", path],
+    enabled: !!path,
+    queryFn: async () => {
+      const { data } = await supabase.storage.from("product-images").createSignedUrl(path!, 3600);
+      return data?.signedUrl ?? null;
+    },
+  });
+  if (!url) return null;
+  return <img src={url} alt={alt} loading="lazy" className="size-16 rounded-xl object-cover" />;
+}
+
 function ProductsPage() {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [productType, setProductType] = useState<"ebook" | "curso">("ebook");
+  const [accessUrl, setAccessUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [digitalFile, setDigitalFile] = useState<File | null>(null);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
@@ -81,13 +99,38 @@ function ProductsPage() {
       });
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("Sessão expirada");
+      if (productType === "ebook" && !digitalFile) throw new Error("Envie o ficheiro do ebook");
+      if (productType === "curso" && !accessUrl.trim()) throw new Error("Indique o link da área de membros");
+
+      const uid = auth.user.id;
       const slug = `${slugify(parsed.name)}-${Math.random().toString(36).slice(2, 7)}`;
+
+      let imagePath: string | null = null;
+      if (imageFile) {
+        const path = `${uid}/${slug}-${Date.now()}-${imageFile.name.replace(/[^\w.-]/g, "_")}`;
+        const { error } = await supabase.storage.from("product-images").upload(path, imageFile, { upsert: true });
+        if (error) throw new Error("Falha ao enviar a imagem");
+        imagePath = path;
+      }
+
+      let filePath: string | null = null;
+      if (productType === "ebook" && digitalFile) {
+        const path = `${uid}/${slug}-${Date.now()}-${digitalFile.name.replace(/[^\w.-]/g, "_")}`;
+        const { error } = await supabase.storage.from("product-files").upload(path, digitalFile, { upsert: true });
+        if (error) throw new Error("Falha ao enviar o ficheiro");
+        filePath = path;
+      }
+
       const { error } = await supabase.from("products").insert({
-        seller_id: auth.user.id,
+        seller_id: uid,
         name: parsed.name,
         description: parsed.description ?? null,
         price: parsed.price,
         slug,
+        product_type: productType,
+        image_url: imagePath,
+        file_path: filePath,
+        access_url: productType === "curso" ? accessUrl.trim() : null,
       });
       if (error) throw error;
     },
@@ -96,6 +139,9 @@ function ProductsPage() {
       setName("");
       setDescription("");
       setPrice("");
+      setAccessUrl("");
+      setImageFile(null);
+      setDigitalFile(null);
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -128,6 +174,26 @@ function ProductsPage() {
         >
           <p className="font-display font-semibold">Novo produto</p>
           <div className="space-y-2">
+            <Label>Tipo de produto</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {(["ebook", "curso"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setProductType(t)}
+                  className={cn(
+                    "rounded-xl border px-3 py-2 text-sm transition-colors",
+                    productType === t
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {t === "ebook" ? "Ebook (download)" : "Curso (área de membros)"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="name">Nome</Label>
             <Input id="name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} required />
           </div>
@@ -153,6 +219,47 @@ function ProductsPage() {
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="image">Imagem de capa</Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
+
+          {productType === "ebook" ? (
+            <div className="space-y-2">
+              <Label htmlFor="file">Ficheiro do ebook (PDF, ePub, ZIP)</Label>
+              <Input
+                id="file"
+                type="file"
+                accept=".pdf,.epub,.zip,application/pdf,application/epub+zip,application/zip"
+                onChange={(e) => setDigitalFile(e.target.files?.[0] ?? null)}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Após o pagamento confirmado, o comprador descarrega automaticamente.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="access">Link da área de membros</Label>
+              <Input
+                id="access"
+                type="url"
+                placeholder="https://area-de-membros.com/curso"
+                value={accessUrl}
+                onChange={(e) => setAccessUrl(e.target.value)}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Após o pagamento, o comprador é encaminhado para a área de membros.
+              </p>
+            </div>
+          )}
+
           <Button type="submit" variant="hero" className="w-full gap-2" disabled={create.isPending}>
             <Plus className="size-4" /> Criar produto
           </Button>
@@ -170,9 +277,15 @@ function ProductsPage() {
             products.map((p) => (
               <div key={p.id} className="glass rounded-2xl p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-display text-lg font-semibold">{p.name}</p>
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
+                  <div className="flex min-w-0 gap-3">
+                    <ProductThumb path={p.image_url} alt={p.name} />
+                    <div className="min-w-0">
+                      <p className="font-display text-lg font-semibold">{p.name}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
+                      <Badge variant="outline" className="mt-2">
+                        {p.product_type === "curso" ? "Curso" : "Ebook"}
+                      </Badge>
+                    </div>
                   </div>
                   <Badge className="bg-secondary text-secondary-foreground">{mzn(Number(p.price))}</Badge>
                 </div>

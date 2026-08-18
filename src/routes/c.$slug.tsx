@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Loader2, Lock, ShieldCheck, Smartphone } from "lucide-react";
+import { CheckCircle2, Download, GraduationCap, Loader2, Lock, ShieldCheck, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
-import { supabase } from "@/integrations/supabase/client";
-import { startCheckout, getPaymentStatus } from "@/lib/checkout.functions";
+import { startCheckout, getPaymentStatus, getPublicProduct, getDelivery } from "@/lib/checkout.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,6 +45,8 @@ function Checkout() {
   const { slug } = Route.useParams();
   const start = useServerFn(startCheckout);
   const checkStatus = useServerFn(getPaymentStatus);
+  const fetchProduct = useServerFn(getPublicProduct);
+  const fetchDelivery = useServerFn(getDelivery);
 
   const [method, setMethod] = useState<(typeof methods)[number]["id"]>("MPESA");
   const [name, setName] = useState("");
@@ -57,16 +58,13 @@ function Checkout() {
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["public-product", slug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("name, description, price, currency, image_url")
-        .eq("slug", slug)
-        .eq("is_active", true)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => fetchProduct({ data: { slug } }),
+  });
+
+  const { data: delivery } = useQuery({
+    queryKey: ["delivery", reference],
+    enabled: !!reference && status === "paid",
+    queryFn: () => fetchDelivery({ data: { reference: reference! } }),
   });
 
   useEffect(() => {
@@ -134,6 +132,22 @@ function Checkout() {
               <CheckCircle2 className="size-10 text-primary" />
               <h1 className="font-display text-2xl font-semibold">Pagamento confirmado</h1>
               <p className="text-muted-foreground">Referência {reference}</p>
+
+              {delivery?.downloadUrl ? (
+                <Button variant="hero" className="mt-2 gap-2" asChild>
+                  <a href={delivery.downloadUrl} download>
+                    <Download className="size-4" /> Baixar {delivery.name}
+                  </a>
+                </Button>
+              ) : delivery?.accessUrl ? (
+                <Button variant="hero" className="mt-2 gap-2" asChild>
+                  <a href={delivery.accessUrl} target="_blank" rel="noreferrer">
+                    <GraduationCap className="size-4" /> Aceder à área de membros
+                  </a>
+                </Button>
+              ) : (
+                <p className="text-sm text-muted-foreground">A preparar o seu acesso…</p>
+              )}
             </div>
           ) : reference && status === "pending" ? (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
@@ -212,7 +226,20 @@ function Checkout() {
 
         <aside className="glass h-fit rounded-2xl p-6">
           <p className="text-sm text-muted-foreground">Resumo</p>
+          {product.image_url ? (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              loading="lazy"
+              className="mt-3 aspect-video w-full rounded-xl object-cover"
+            />
+          ) : null}
           <p className="mt-2 font-display text-lg font-semibold">{product.name}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {product.product_type === "curso"
+              ? "Acesso imediato à área de membros após o pagamento"
+              : "Download imediato após o pagamento"}
+          </p>
           {product.description ? (
             <p className="mt-2 text-sm text-muted-foreground">{product.description}</p>
           ) : null}
