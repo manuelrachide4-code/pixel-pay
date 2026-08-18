@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Loader2, Lock, ShieldCheck, Smartphone } from "lucide-react";
+import { CheckCircle2, Download, GraduationCap, Loader2, Lock, ShieldCheck, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
 import { startCheckout, getPaymentStatus, getPublicProduct, getDelivery } from "@/lib/checkout.functions";
