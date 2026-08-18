@@ -14,6 +14,67 @@ const startSchema = z.object({
 });
 
 const refSchema = z.object({ reference: z.string().trim().min(4).max(64) });
+const slugSchema = z.object({ slug: z.string().trim().min(1).max(120) });
+
+export const getPublicProduct = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => slugSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: product } = await supabaseAdmin
+      .from("products")
+      .select("name, description, price, currency, image_url, product_type")
+      .eq("slug", data.slug)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!product) return null;
+
+    let imageUrl: string | null = null;
+    if (product.image_url) {
+      const { data: signed } = await supabaseAdmin.storage
+        .from("product-images")
+        .createSignedUrl(product.image_url, 60 * 60);
+      imageUrl = signed?.signedUrl ?? null;
+    }
+
+    return { ...product, image_url: imageUrl };
+  });
+
+export const getDelivery = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => refSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: payment } = await supabaseAdmin
+      .from("payments")
+      .select("status, product_id")
+      .eq("reference", data.reference)
+      .maybeSingle();
+
+    if (!payment || payment.status !== "paid" || !payment.product_id) return null;
+
+    const { data: product } = await supabaseAdmin
+      .from("products")
+      .select("name, product_type, file_path, access_url")
+      .eq("id", payment.product_id)
+      .maybeSingle();
+
+    if (!product) return null;
+
+    let downloadUrl: string | null = null;
+    if (product.file_path) {
+      const { data: signed } = await supabaseAdmin.storage
+        .from("product-files")
+        .createSignedUrl(product.file_path, 60 * 60 * 24, { download: true });
+      downloadUrl = signed?.signedUrl ?? null;
+    }
+
+    return {
+      name: product.name,
+      productType: product.product_type,
+      downloadUrl,
+      accessUrl: product.access_url,
+    };
+  });
 
 export const startCheckout = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => startSchema.parse(input))
