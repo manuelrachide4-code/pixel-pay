@@ -277,9 +277,15 @@ function ProductsPage() {
             products.map((p) => (
               <div key={p.id} className="glass rounded-2xl p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-display text-lg font-semibold">{p.name}</p>
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
+                  <div className="flex min-w-0 gap-3">
+                    <ProductThumb path={p.image_url} alt={p.name} />
+                    <div className="min-w-0">
+                      <p className="font-display text-lg font-semibold">{p.name}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
+                      <Badge variant="outline" className="mt-2">
+                        {p.product_type === "curso" ? "Curso" : "Ebook"}
+                      </Badge>
+                    </div>
                   </div>
                   <Badge className="bg-secondary text-secondary-foreground">{mzn(Number(p.price))}</Badge>
                 </div>
