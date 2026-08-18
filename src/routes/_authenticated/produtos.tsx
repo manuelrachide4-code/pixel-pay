@@ -219,6 +219,47 @@ function ProductsPage() {
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="image">Imagem de capa</Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            />
+          </div>
+
+          {productType === "ebook" ? (
+            <div className="space-y-2">
+              <Label htmlFor="file">Ficheiro do ebook (PDF, ePub, ZIP)</Label>
+              <Input
+                id="file"
+                type="file"
+                accept=".pdf,.epub,.zip,application/pdf,application/epub+zip,application/zip"
+                onChange={(e) => setDigitalFile(e.target.files?.[0] ?? null)}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Após o pagamento confirmado, o comprador descarrega automaticamente.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="access">Link da área de membros</Label>
+              <Input
+                id="access"
+                type="url"
+                placeholder="https://area-de-membros.com/curso"
+                value={accessUrl}
+                onChange={(e) => setAccessUrl(e.target.value)}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Após o pagamento, o comprador é encaminhado para a área de membros.
+              </p>
+            </div>
+          )}
+
           <Button type="submit" variant="hero" className="w-full gap-2" disabled={create.isPending}>
             <Plus className="size-4" /> Criar produto
           </Button>
