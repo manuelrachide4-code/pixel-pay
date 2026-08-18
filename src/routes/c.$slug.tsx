@@ -58,16 +58,13 @@ function Checkout() {
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["public-product", slug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("name, description, price, currency, image_url")
-        .eq("slug", slug)
-        .eq("is_active", true)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => fetchProduct({ data: { slug } }),
+  });
+
+  const { data: delivery } = useQuery({
+    queryKey: ["delivery", reference],
+    enabled: !!reference && status === "paid",
+    queryFn: () => fetchDelivery({ data: { reference: reference! } }),
   });
 
   useEffect(() => {
