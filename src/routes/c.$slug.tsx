@@ -45,6 +45,8 @@ function Checkout() {
   const { slug } = Route.useParams();
   const start = useServerFn(startCheckout);
   const checkStatus = useServerFn(getPaymentStatus);
+  const fetchProduct = useServerFn(getPublicProduct);
+  const fetchDelivery = useServerFn(getDelivery);
 
   const [method, setMethod] = useState<(typeof methods)[number]["id"]>("MPESA");
   const [name, setName] = useState("");
