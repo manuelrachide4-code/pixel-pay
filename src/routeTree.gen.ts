@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticated/produtos'
+import { Route as AuthenticatedSaquesRouteImport } from './routes/_authenticated/saques'
 import { Route as AuthenticatedVendasRouteImport } from './routes/_authenticated/vendas'
 import { Route as CSlugRouteImport } from './routes/c.$slug'
 import { Route as ApiPublicPaymozWebhookRouteImport } from './routes/api/public/paymoz-webhook'
@@ -42,6 +43,11 @@ const AuthenticatedProdutosRoute = AuthenticatedProdutosRouteImport.update({
   path: '/produtos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSaquesRoute = AuthenticatedSaquesRouteImport.update({
+  id: '/saques',
+  path: '/saques',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedVendasRoute = AuthenticatedVendasRouteImport.update({
   id: '/vendas',
   path: '/vendas',
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/produtos': typeof AuthenticatedProdutosRoute
+  '/saques': typeof AuthenticatedSaquesRoute
   '/vendas': typeof AuthenticatedVendasRoute
   '/c/$slug': typeof CSlugRoute
   '/api/public/paymoz-webhook': typeof ApiPublicPaymozWebhookRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/produtos': typeof AuthenticatedProdutosRoute
+  '/saques': typeof AuthenticatedSaquesRoute
   '/vendas': typeof AuthenticatedVendasRoute
   '/c/$slug': typeof CSlugRoute
   '/api/public/paymoz-webhook': typeof ApiPublicPaymozWebhookRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/produtos': typeof AuthenticatedProdutosRoute
+  '/_authenticated/saques': typeof AuthenticatedSaquesRoute
   '/_authenticated/vendas': typeof AuthenticatedVendasRoute
   '/c/$slug': typeof CSlugRoute
   '/api/public/paymoz-webhook': typeof ApiPublicPaymozWebhookRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/produtos'
+    | '/saques'
     | '/vendas'
     | '/c/$slug'
     | '/api/public/paymoz-webhook'
@@ -103,6 +113,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/produtos'
+    | '/saques'
     | '/vendas'
     | '/c/$slug'
     | '/api/public/paymoz-webhook'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/dashboard'
     | '/_authenticated/produtos'
+    | '/_authenticated/saques'
     | '/_authenticated/vendas'
     | '/c/$slug'
     | '/api/public/paymoz-webhook'
@@ -163,6 +175,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProdutosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/saques': {
+      id: '/_authenticated/saques'
+      path: '/saques'
+      fullPath: '/saques'
+      preLoaderRoute: typeof AuthenticatedSaquesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/vendas': {
       id: '/_authenticated/vendas'
       path: '/vendas'
@@ -190,12 +209,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedProdutosRoute: typeof AuthenticatedProdutosRoute
+  AuthenticatedSaquesRoute: typeof AuthenticatedSaquesRoute
   AuthenticatedVendasRoute: typeof AuthenticatedVendasRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedProdutosRoute: AuthenticatedProdutosRoute,
+  AuthenticatedSaquesRoute: AuthenticatedSaquesRoute,
   AuthenticatedVendasRoute: AuthenticatedVendasRoute,
 }
 

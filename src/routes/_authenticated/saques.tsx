@@ -99,7 +99,7 @@ function WithdrawalsPage() {
         _amount: value,
         _method: method,
         _destination: destination.trim(),
-        _account_name: accountName.trim() || null,
+        _account_name: accountName.trim() || undefined,
       });
       if (error) throw error;
     },
