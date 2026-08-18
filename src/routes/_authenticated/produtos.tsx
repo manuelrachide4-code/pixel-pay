@@ -51,11 +51,28 @@ const mzn = (v: number) =>
     .format(v)
     .replace("MTn", "MZN");
 
+function ProductThumb({ path, alt }: { path: string | null; alt: string }) {
+  const { data: url } = useQuery({
+    queryKey: ["product-image", path],
+    enabled: !!path,
+    queryFn: async () => {
+      const { data } = await supabase.storage.from("product-images").createSignedUrl(path!, 3600);
+      return data?.signedUrl ?? null;
+    },
+  });
+  if (!url) return null;
+  return <img src={url} alt={alt} loading="lazy" className="size-16 rounded-xl object-cover" />;
+}
+
 function ProductsPage() {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
+  const [productType, setProductType] = useState<"ebook" | "curso">("ebook");
+  const [accessUrl, setAccessUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [digitalFile, setDigitalFile] = useState<File | null>(null);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["products"],
