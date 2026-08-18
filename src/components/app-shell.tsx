@@ -3,11 +3,11 @@ import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3,
-  CreditCard,
   LayoutDashboard,
   LogOut,
   Menu,
   Package,
+  ShieldCheck,
   Users,
   Wallet,
   Webhook,
@@ -16,13 +16,13 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 const nav = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" as const },
   { label: "Produtos", icon: Package, to: "/produtos" as const },
   { label: "Vendas", icon: BarChart3, to: "/vendas" as const },
-  { label: "Carteira", icon: Wallet },
-  { label: "Saques", icon: CreditCard },
+  { label: "Carteira e saques", icon: Wallet, to: "/saques" as const },
   { label: "Afiliados", icon: Users },
   { label: "API & Webhooks", icon: Webhook },
 ];
@@ -30,6 +30,7 @@ const nav = [
 
 export function AppShell({ children, title }: { children: ReactNode; title: string }) {
   const [open, setOpen] = useState(false);
+  const { data: isAdmin } = useIsAdmin();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -54,7 +55,7 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
           <span className="font-display text-lg font-semibold">DropPay Pro</span>
         </div>
         <nav className="space-y-1 px-3 py-4">
-          {nav.map((item) => {
+          {[...nav, ...(isAdmin ? [{ label: "Administração", icon: ShieldCheck, to: "/admin" as const }] : [])].map((item) => {
             const isActive = item.to ? pathname === item.to : false;
             const inner = (
               <>

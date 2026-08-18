@@ -79,6 +79,44 @@ export type Database = {
           },
         ]
       }
+      platform_earnings: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          seller_id: string | null
+          source: string
+          withdrawal_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          seller_id?: string | null
+          source?: string
+          withdrawal_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          seller_id?: string | null
+          source?: string
+          withdrawal_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_earnings_withdrawal_id_fkey"
+            columns: ["withdrawal_id"]
+            isOneToOne: false
+            referencedRelation: "withdrawals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           access_url: string | null
@@ -208,6 +246,60 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawals: {
+        Row: {
+          account_name: string | null
+          admin_note: string | null
+          amount: number
+          created_at: string
+          currency: string
+          destination: string
+          fee_amount: number
+          fee_percent: number
+          id: string
+          method: string
+          net_amount: number
+          processed_at: string | null
+          seller_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_name?: string | null
+          admin_note?: string | null
+          amount: number
+          created_at?: string
+          currency?: string
+          destination: string
+          fee_amount?: number
+          fee_percent?: number
+          id?: string
+          method: string
+          net_amount?: number
+          processed_at?: string | null
+          seller_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string | null
+          admin_note?: string | null
+          amount?: number
+          created_at?: string
+          currency?: string
+          destination?: string
+          fee_amount?: number
+          fee_percent?: number
+          id?: string
+          method?: string
+          net_amount?: number
+          processed_at?: string | null
+          seller_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -219,6 +311,19 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      request_withdrawal: {
+        Args: {
+          _account_name?: string
+          _amount: number
+          _destination: string
+          _method: string
+        }
+        Returns: string
+      }
+      resolve_withdrawal: {
+        Args: { _id: string; _note?: string; _status: string }
+        Returns: undefined
       }
     }
     Enums: {
