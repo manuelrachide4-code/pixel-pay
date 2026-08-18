@@ -81,40 +81,49 @@ export type Database = {
       }
       products: {
         Row: {
+          access_url: string | null
           created_at: string
           currency: string
           description: string | null
+          file_path: string | null
           id: string
           image_url: string | null
           is_active: boolean
           name: string
           price: number
+          product_type: string
           seller_id: string
           slug: string
           updated_at: string
         }
         Insert: {
+          access_url?: string | null
           created_at?: string
           currency?: string
           description?: string | null
+          file_path?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
           name: string
           price?: number
+          product_type?: string
           seller_id: string
           slug: string
           updated_at?: string
         }
         Update: {
+          access_url?: string | null
           created_at?: string
           currency?: string
           description?: string | null
+          file_path?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean
           name?: string
           price?: number
+          product_type?: string
           seller_id?: string
           slug?: string
           updated_at?: string
