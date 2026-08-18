@@ -226,7 +226,20 @@ function Checkout() {
 
         <aside className="glass h-fit rounded-2xl p-6">
           <p className="text-sm text-muted-foreground">Resumo</p>
+          {product.image_url ? (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              loading="lazy"
+              className="mt-3 aspect-video w-full rounded-xl object-cover"
+            />
+          ) : null}
           <p className="mt-2 font-display text-lg font-semibold">{product.name}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {product.product_type === "curso"
+              ? "Acesso imediato à área de membros após o pagamento"
+              : "Download imediato após o pagamento"}
+          </p>
           {product.description ? (
             <p className="mt-2 text-sm text-muted-foreground">{product.description}</p>
           ) : null}
