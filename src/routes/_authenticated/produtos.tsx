@@ -98,13 +98,38 @@ function ProductsPage() {
       });
       const { data: auth } = await supabase.auth.getUser();
       if (!auth.user) throw new Error("Sessão expirada");
+      if (productType === "ebook" && !digitalFile) throw new Error("Envie o ficheiro do ebook");
+      if (productType === "curso" && !accessUrl.trim()) throw new Error("Indique o link da área de membros");
+
+      const uid = auth.user.id;
       const slug = `${slugify(parsed.name)}-${Math.random().toString(36).slice(2, 7)}`;
+
+      let imagePath: string | null = null;
+      if (imageFile) {
+        const path = `${uid}/${slug}-${Date.now()}-${imageFile.name.replace(/[^\w.-]/g, "_")}`;
+        const { error } = await supabase.storage.from("product-images").upload(path, imageFile, { upsert: true });
+        if (error) throw new Error("Falha ao enviar a imagem");
+        imagePath = path;
+      }
+
+      let filePath: string | null = null;
+      if (productType === "ebook" && digitalFile) {
+        const path = `${uid}/${slug}-${Date.now()}-${digitalFile.name.replace(/[^\w.-]/g, "_")}`;
+        const { error } = await supabase.storage.from("product-files").upload(path, digitalFile, { upsert: true });
+        if (error) throw new Error("Falha ao enviar o ficheiro");
+        filePath = path;
+      }
+
       const { error } = await supabase.from("products").insert({
-        seller_id: auth.user.id,
+        seller_id: uid,
         name: parsed.name,
         description: parsed.description ?? null,
         price: parsed.price,
         slug,
+        product_type: productType,
+        image_url: imagePath,
+        file_path: filePath,
+        access_url: productType === "curso" ? accessUrl.trim() : null,
       });
       if (error) throw error;
     },
@@ -113,6 +138,9 @@ function ProductsPage() {
       setName("");
       setDescription("");
       setPrice("");
+      setAccessUrl("");
+      setImageFile(null);
+      setDigitalFile(null);
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
     onError: (e: Error) => toast.error(e.message),
