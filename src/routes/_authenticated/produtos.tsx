@@ -173,6 +173,26 @@ function ProductsPage() {
         >
           <p className="font-display font-semibold">Novo produto</p>
           <div className="space-y-2">
+            <Label>Tipo de produto</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {(["ebook", "curso"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setProductType(t)}
+                  className={cn(
+                    "rounded-xl border px-3 py-2 text-sm transition-colors",
+                    productType === t
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {t === "ebook" ? "Ebook (download)" : "Curso (área de membros)"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="name">Nome</Label>
             <Input id="name" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} required />
           </div>
