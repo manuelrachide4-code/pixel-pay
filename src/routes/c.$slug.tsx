@@ -132,6 +132,22 @@ function Checkout() {
               <CheckCircle2 className="size-10 text-primary" />
               <h1 className="font-display text-2xl font-semibold">Pagamento confirmado</h1>
               <p className="text-muted-foreground">Referência {reference}</p>
+
+              {delivery?.downloadUrl ? (
+                <Button variant="hero" className="mt-2 gap-2" asChild>
+                  <a href={delivery.downloadUrl} download>
+                    <Download className="size-4" /> Baixar {delivery.name}
+                  </a>
+                </Button>
+              ) : delivery?.accessUrl ? (
+                <Button variant="hero" className="mt-2 gap-2" asChild>
+                  <a href={delivery.accessUrl} target="_blank" rel="noreferrer">
+                    <GraduationCap className="size-4" /> Aceder à área de membros
+                  </a>
+                </Button>
+              ) : (
+                <p className="text-sm text-muted-foreground">A preparar o seu acesso…</p>
+              )}
             </div>
           ) : reference && status === "pending" ? (
             <div className="flex flex-col items-center gap-3 py-10 text-center">
