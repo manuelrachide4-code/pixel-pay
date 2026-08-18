@@ -5,8 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { CheckCircle2, Loader2, Lock, ShieldCheck, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
-import { supabase } from "@/integrations/supabase/client";
-import { startCheckout, getPaymentStatus } from "@/lib/checkout.functions";
+import { startCheckout, getPaymentStatus, getPublicProduct, getDelivery } from "@/lib/checkout.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
