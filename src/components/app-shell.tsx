@@ -23,8 +23,8 @@ const nav = [
   { label: "Produtos", icon: Package, to: "/produtos" as const },
   { label: "Vendas", icon: BarChart3, to: "/vendas" as const },
   { label: "Carteira e saques", icon: Wallet, to: "/saques" as const },
-  { label: "Afiliados", icon: Users },
-  { label: "API & Webhooks", icon: Webhook },
+  { label: "Afiliados", icon: Users, to: "/afiliados" as const },
+  { label: "API & Webhooks", icon: Webhook, to: "/api-webhooks" as const },
 ];
 
 
