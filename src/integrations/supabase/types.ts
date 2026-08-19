@@ -14,8 +14,93 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliates: {
+        Row: {
+          code: string
+          commission_percent: number
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          product_id: string | null
+          seller_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          commission_percent?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          product_id?: string | null
+          seller_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          commission_percent?: number
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          product_id?: string | null
+          seller_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliates_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          revoked_at: string | null
+          seller_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          revoked_at?: string | null
+          seller_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          revoked_at?: string | null
+          seller_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
+          affiliate_commission: number
+          affiliate_id: string | null
           amount: number
           created_at: string
           currency: string
@@ -34,6 +119,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          affiliate_commission?: number
+          affiliate_id?: string | null
           amount: number
           created_at?: string
           currency?: string
@@ -52,6 +139,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          affiliate_commission?: number
+          affiliate_id?: string | null
           amount?: number
           created_at?: string
           currency?: string
@@ -70,6 +159,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "payments_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payments_product_id_fkey"
             columns: ["product_id"]
@@ -246,6 +342,36 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_endpoints: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          secret: string
+          seller_id: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          secret?: string
+          seller_id: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          secret?: string
+          seller_id?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       withdrawals: {
         Row: {
           account_name: string | null
@@ -305,6 +431,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_api_key: { Args: { _name: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
