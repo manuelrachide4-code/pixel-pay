@@ -23,8 +23,8 @@ const nav = [
   { label: "Produtos", icon: Package, to: "/produtos" as const },
   { label: "Vendas", icon: BarChart3, to: "/vendas" as const },
   { label: "Carteira e saques", icon: Wallet, to: "/saques" as const },
-  { label: "Afiliados", icon: Users },
-  { label: "API & Webhooks", icon: Webhook },
+  { label: "Afiliados", icon: Users, to: "/afiliados" as const },
+  { label: "API & Webhooks", icon: Webhook, to: "/api-webhooks" as const },
 ];
 
 
@@ -56,31 +56,18 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
         </div>
         <nav className="space-y-1 px-3 py-4">
           {[...nav, ...(isAdmin ? [{ label: "Administração", icon: ShieldCheck, to: "/admin" as const }] : [])].map((item) => {
-            const isActive = item.to ? pathname === item.to : false;
-            const inner = (
-              <>
-                <item.icon className="size-4" />
-                {item.label}
-              </>
-            );
+            const isActive = pathname === item.to;
             const base = cn(
               "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors",
               isActive
                 ? "bg-sidebar-accent text-primary"
                 : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
             );
-            return item.to ? (
+            return (
               <Link key={item.label} to={item.to} className={base} onClick={() => setOpen(false)}>
-                {inner}
+                <item.icon className="size-4" />
+                {item.label}
               </Link>
-            ) : (
-              <span
-                key={item.label}
-                className={cn(base, "cursor-not-allowed opacity-50")}
-                title="Em breve"
-              >
-                {inner}
-              </span>
             );
           })}
         </nav>

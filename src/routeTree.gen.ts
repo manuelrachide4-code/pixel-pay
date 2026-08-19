@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAfiliadosRouteImport } from './routes/_authenticated/afiliados'
+import { Route as AuthenticatedApiWebhooksRouteImport } from './routes/_authenticated/api-webhooks'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedProdutosRouteImport } from './routes/_authenticated/produtos'
 import { Route as AuthenticatedSaquesRouteImport } from './routes/_authenticated/saques'
@@ -39,6 +41,17 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAfiliadosRoute = AuthenticatedAfiliadosRouteImport.update({
+  id: '/afiliados',
+  path: '/afiliados',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedApiWebhooksRoute =
+  AuthenticatedApiWebhooksRouteImport.update({
+    id: '/api-webhooks',
+    path: '/api-webhooks',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -74,6 +87,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/afiliados': typeof AuthenticatedAfiliadosRoute
+  '/api-webhooks': typeof AuthenticatedApiWebhooksRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/saques': typeof AuthenticatedSaquesRoute
@@ -85,6 +100,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/afiliados': typeof AuthenticatedAfiliadosRoute
+  '/api-webhooks': typeof AuthenticatedApiWebhooksRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/produtos': typeof AuthenticatedProdutosRoute
   '/saques': typeof AuthenticatedSaquesRoute
@@ -98,6 +115,8 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/afiliados': typeof AuthenticatedAfiliadosRoute
+  '/_authenticated/api-webhooks': typeof AuthenticatedApiWebhooksRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/produtos': typeof AuthenticatedProdutosRoute
   '/_authenticated/saques': typeof AuthenticatedSaquesRoute
@@ -111,6 +130,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
+    | '/afiliados'
+    | '/api-webhooks'
     | '/dashboard'
     | '/produtos'
     | '/saques'
@@ -122,6 +143,8 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
+    | '/afiliados'
+    | '/api-webhooks'
     | '/dashboard'
     | '/produtos'
     | '/saques'
@@ -134,6 +157,8 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin'
+    | '/_authenticated/afiliados'
+    | '/_authenticated/api-webhooks'
     | '/_authenticated/dashboard'
     | '/_authenticated/produtos'
     | '/_authenticated/saques'
@@ -178,6 +203,20 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/afiliados': {
+      id: '/_authenticated/afiliados'
+      path: '/afiliados'
+      fullPath: '/afiliados'
+      preLoaderRoute: typeof AuthenticatedAfiliadosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/api-webhooks': {
+      id: '/_authenticated/api-webhooks'
+      path: '/api-webhooks'
+      fullPath: '/api-webhooks'
+      preLoaderRoute: typeof AuthenticatedApiWebhooksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -227,6 +266,8 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedAfiliadosRoute: typeof AuthenticatedAfiliadosRoute
+  AuthenticatedApiWebhooksRoute: typeof AuthenticatedApiWebhooksRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedProdutosRoute: typeof AuthenticatedProdutosRoute
   AuthenticatedSaquesRoute: typeof AuthenticatedSaquesRoute
@@ -235,6 +276,8 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedAfiliadosRoute: AuthenticatedAfiliadosRoute,
+  AuthenticatedApiWebhooksRoute: AuthenticatedApiWebhooksRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedProdutosRoute: AuthenticatedProdutosRoute,
   AuthenticatedSaquesRoute: AuthenticatedSaquesRoute,
