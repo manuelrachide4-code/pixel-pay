@@ -89,7 +89,8 @@ export const startCheckout = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (productError) throw new Error("Falha ao carregar o produto");
-    if (!product || !product.is_active) throw new Error("Produto indisponível");
+    if (!product) throw new Error("Produto indisponível");
+    if (!product.is_active) throw new Error("Produto foi desativado. Contacte o vendedor.");
 
     const reference = paymoz.makeReference();
     const amount = Number(product.price);
