@@ -131,6 +131,7 @@ function ProductsPage() {
         image_url: imagePath,
         file_path: filePath,
         access_url: productType === "curso" ? accessUrl.trim() : null,
+        is_active: true,
       });
       if (error) throw error;
     },
