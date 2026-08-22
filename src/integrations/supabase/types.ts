@@ -431,6 +431,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_set_kyc: {
+        Args: { _status: string; _user_id: string }
+        Returns: undefined
+      }
+      admin_set_product_active: {
+        Args: { _active: boolean; _product_id: string }
+        Returns: undefined
+      }
       create_api_key: { Args: { _name: string }; Returns: string }
       has_role: {
         Args: {
