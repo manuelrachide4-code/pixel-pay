@@ -6,6 +6,7 @@ import { CheckCircle2, Download, GraduationCap, Loader2, Lock, ShieldCheck, Smar
 import { toast } from "sonner";
 
 import { startCheckout, getPaymentStatus, getPublicProduct, getDelivery } from "@/lib/checkout.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
