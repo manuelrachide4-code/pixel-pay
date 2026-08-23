@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/brand-logo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
@@ -334,7 +335,7 @@ function Header() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <div className="gradient-brand size-8 rounded-lg" />
+          <BrandMark />
           <span className="font-display text-lg font-semibold">DropPay Pro</span>
         </div>
         <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
@@ -401,7 +402,7 @@ function Footer() {
     <footer className="border-t border-border py-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm text-muted-foreground sm:flex-row">
         <div className="flex items-center gap-2">
-          <div className="gradient-brand size-6 rounded-md" />
+          <BrandMark className="size-6" />
           <span className="font-display font-semibold text-foreground">DropPay Pro</span>
         </div>
         <p className="flex items-center gap-2">

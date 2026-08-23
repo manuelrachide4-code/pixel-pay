@@ -1,3 +1,4 @@
+import { BrandMark } from "@/components/brand-logo";
 import { useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -51,7 +52,7 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
         )}
       >
         <div className="flex h-16 items-center gap-2 px-5">
-          <div className="gradient-brand size-8 rounded-lg" />
+          <BrandMark />
           <span className="font-display text-lg font-semibold">DropPay Pro</span>
         </div>
         <nav className="space-y-1 px-3 py-4">
