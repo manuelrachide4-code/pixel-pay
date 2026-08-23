@@ -130,6 +130,18 @@ function Checkout() {
     );
   }
 
+  if (isError) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-6 text-center">
+        <h1 className="font-display text-2xl font-semibold">Falha ao carregar</h1>
+        <p className="text-muted-foreground">Houve um problema de ligação. Tente novamente.</p>
+        <Button variant="hero" onClick={() => void refetch()}>
+          Tentar de novo
+        </Button>
+      </main>
+    );
+  }
+
   if (!product) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-6 text-center">
