@@ -1,8 +1,9 @@
+import { BrandMark } from "@/components/brand-logo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -173,9 +174,7 @@ function AuthPage() {
 
         <div className="glass rounded-3xl p-6 sm:p-8">
           <div className="mb-6 flex items-center gap-3">
-            <div className="gradient-brand flex size-10 items-center justify-center rounded-xl">
-              <ShieldCheck className="size-5 text-primary-foreground" />
-            </div>
+            <BrandMark className="size-10 rounded-xl" />
             <div>
               <p className="font-display text-lg font-semibold">DropPay Pro</p>
               <p className="text-xs text-muted-foreground">Conta de vendedor</p>

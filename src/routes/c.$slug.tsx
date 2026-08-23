@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { BrandMark } from "@/components/brand-logo";
+import mpesaLogo from "@/assets/mpesa.png.asset.json";
+import emolaLogo from "@/assets/emola.png.asset.json";
 
 export const Route = createFileRoute("/c/$slug")({
   head: () => ({
@@ -31,10 +34,10 @@ export const Route = createFileRoute("/c/$slug")({
 });
 
 const methods = [
-  { id: "MPESA", label: "M-Pesa" },
-  { id: "EMOLA", label: "e-Mola" },
-  { id: "MKESH", label: "mKesh" },
-  { id: "CARD", label: "Cartão" },
+  { id: "MPESA", label: "M-Pesa", logo: mpesaLogo.url },
+  { id: "EMOLA", label: "e-Mola", logo: emolaLogo.url },
+  { id: "MKESH", label: "mKesh", logo: null },
+  { id: "CARD", label: "Cartão", logo: null },
 ] as const;
 
 const mzn = (v: number) =>
@@ -154,9 +157,17 @@ function Checkout() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:py-16">
       <div className="mb-6 flex items-center gap-2">
-        <div className="gradient-brand size-8 rounded-lg" />
+        <BrandMark />
         <span className="font-display text-lg font-semibold">DropPay Pro</span>
       </div>
+
+      {product.image_url ? (
+        <img
+          src={product.image_url}
+          alt={product.name}
+          className="mb-6 aspect-[16/7] w-full rounded-2xl border border-border object-cover"
+        />
+      ) : null}
 
       <div className="grid gap-6 md:grid-cols-[1fr_320px]">
         <section className="glass rounded-2xl p-6">
@@ -207,7 +218,12 @@ function Checkout() {
                         : "border-border text-muted-foreground hover:text-foreground",
                     )}
                   >
-                    {m.label}
+                    <span className="flex flex-col items-center gap-1.5">
+                      {m.logo ? (
+                        <img src={m.logo} alt={m.label} className="h-7 w-auto rounded-md bg-background object-contain" />
+                      ) : null}
+                      {m.label}
+                    </span>
                   </button>
                 ))}
               </div>
