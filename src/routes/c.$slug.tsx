@@ -56,9 +56,29 @@ function Checkout() {
   const [reference, setReference] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("pending");
 
-  const { data: product, isLoading } = useQuery({
+  const {
+    data: product,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["public-product", slug],
-    queryFn: () => fetchProduct({ data: { slug } }),
+    retry: 1,
+    queryFn: async () => {
+      try {
+        return await fetchProduct({ data: { slug } });
+      } catch (serverError) {
+        // Fallback: produtos activos são legíveis publicamente (sem imagem assinada).
+        const { data, error } = await supabase
+          .from("products")
+          .select("name, description, price, currency, product_type")
+          .eq("slug", slug)
+          .eq("is_active", true)
+          .maybeSingle();
+        if (error) throw serverError;
+        return data ? { ...data, image_url: null as string | null } : null;
+      }
+    },
   });
 
   const { data: delivery } = useQuery({
