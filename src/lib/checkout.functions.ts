@@ -20,14 +20,18 @@ export const getPublicProduct = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => slugSchema.parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: product } = await supabaseAdmin
+    const { data: product, error } = await supabaseAdmin
       .from("products")
-      .select("name, description, price, currency, image_url, product_type")
+      .select("name, description, price, currency, image_url, product_type, is_active")
       .eq("slug", data.slug)
-      .eq("is_active", true)
       .maybeSingle();
 
-    if (!product) return null;
+    if (error) {
+      console.error("[checkout] getPublicProduct failed", error);
+      throw new Error("Não foi possível carregar o produto. Tente novamente.");
+    }
+
+    if (!product || !product.is_active) return null;
 
     let imageUrl: string | null = null;
     if (product.image_url) {

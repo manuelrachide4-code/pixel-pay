@@ -6,6 +6,7 @@ import { CheckCircle2, Download, GraduationCap, Loader2, Lock, ShieldCheck, Smar
 import { toast } from "sonner";
 
 import { startCheckout, getPaymentStatus, getPublicProduct, getDelivery } from "@/lib/checkout.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,9 +57,29 @@ function Checkout() {
   const [reference, setReference] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("pending");
 
-  const { data: product, isLoading } = useQuery({
+  const {
+    data: product,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["public-product", slug],
-    queryFn: () => fetchProduct({ data: { slug } }),
+    retry: 1,
+    queryFn: async () => {
+      try {
+        return await fetchProduct({ data: { slug } });
+      } catch (serverError) {
+        // Fallback: produtos activos são legíveis publicamente (sem imagem assinada).
+        const { data, error } = await supabase
+          .from("products")
+          .select("name, description, price, currency, product_type")
+          .eq("slug", slug)
+          .eq("is_active", true)
+          .maybeSingle();
+        if (error) throw serverError;
+        return data ? { ...data, image_url: null as string | null } : null;
+      }
+    },
   });
 
   const { data: delivery } = useQuery({
@@ -105,6 +126,18 @@ function Checkout() {
     return (
       <main className="mx-auto max-w-3xl p-6">
         <Skeleton className="h-96 w-full rounded-2xl" />
+      </main>
+    );
+  }
+
+  if (isError) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-6 text-center">
+        <h1 className="font-display text-2xl font-semibold">Falha ao carregar</h1>
+        <p className="text-muted-foreground">Houve um problema de ligação. Tente novamente.</p>
+        <Button variant="hero" onClick={() => void refetch()}>
+          Tentar de novo
+        </Button>
       </main>
     );
   }
