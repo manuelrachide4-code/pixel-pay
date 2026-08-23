@@ -2,10 +2,23 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Download, GraduationCap, Loader2, Lock, ShieldCheck, Smartphone } from "lucide-react";
+import {
+  CheckCircle2,
+  Download,
+  GraduationCap,
+  Loader2,
+  Lock,
+  ShieldCheck,
+  Smartphone,
+} from "lucide-react";
 import { toast } from "sonner";
 
-import { startCheckout, getPaymentStatus, getPublicProduct, getDelivery } from "@/lib/checkout.functions";
+import {
+  startCheckout,
+  getPaymentStatus,
+  getPublicProduct,
+  getDelivery,
+} from "@/lib/checkout.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +26,6 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { BrandMark } from "@/components/brand-logo";
-import mpesaLogo from "@/assets/mpesa.png.asset.json";
-import emolaLogo from "@/assets/emola.png.asset.json";
 
 export const Route = createFileRoute("/c/$slug")({
   head: () => ({
@@ -22,10 +33,14 @@ export const Route = createFileRoute("/c/$slug")({
       { title: "Checkout seguro | DropPay Pro" },
       {
         name: "description",
-        content: "Pague em segundos com M-Pesa, e-Mola, mKesh ou cartão. Checkout seguro DropPay Pro.",
+        content:
+          "Pague em segundos com M-Pesa, e-Mola, mKesh ou cartão. Checkout seguro DropPay Pro.",
       },
       { property: "og:title", content: "Checkout seguro | DropPay Pro" },
-      { property: "og:description", content: "Pagamento rápido com M-Pesa, e-Mola, mKesh ou cartão." },
+      {
+        property: "og:description",
+        content: "Pagamento rápido com M-Pesa, e-Mola, mKesh ou cartão.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -34,8 +49,11 @@ export const Route = createFileRoute("/c/$slug")({
 });
 
 const methods = [
-  { id: "MPESA", label: "M-Pesa", logo: mpesaLogo.url },
-  { id: "EMOLA", label: "e-Mola", logo: emolaLogo.url },
+  // These are local public assets rather than Lovable asset-metadata URLs. The
+  // latter are not emitted by Vite, so they result in a missing image outside
+  // the Lovable editor (including the public checkout).
+  { id: "MPESA", label: "M-Pesa", logo: "/payment-methods/mpesa.svg" },
+  { id: "EMOLA", label: "e-Mola", logo: "/payment-methods/emola.svg" },
   { id: "MKESH", label: "mKesh", logo: null },
   { id: "CARD", label: "Cartão", logo: null },
 ] as const;
@@ -149,7 +167,9 @@ function Checkout() {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-3 p-6 text-center">
         <h1 className="font-display text-2xl font-semibold">Produto indisponível</h1>
-        <p className="text-muted-foreground">Este link de checkout não existe ou foi desactivado.</p>
+        <p className="text-muted-foreground">
+          Este link de checkout não existe ou foi desactivado.
+        </p>
       </main>
     );
   }
@@ -220,7 +240,11 @@ function Checkout() {
                   >
                     <span className="flex flex-col items-center gap-1.5">
                       {m.logo ? (
-                        <img src={m.logo} alt={m.label} className="h-7 w-auto rounded-md bg-background object-contain" />
+                        <img
+                          src={m.logo}
+                          alt={m.label}
+                          className="h-7 w-auto rounded-md bg-background object-contain"
+                        />
                       ) : null}
                       {m.label}
                     </span>
@@ -230,7 +254,13 @@ function Checkout() {
 
               <div className="space-y-2">
                 <Label htmlFor="cname">Nome completo</Label>
-                <Input id="cname" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} required />
+                <Input
+                  id="cname"
+                  value={name}
+                  maxLength={120}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="cemail">Email</Label>
@@ -256,7 +286,11 @@ function Checkout() {
               </div>
 
               <Button type="submit" variant="hero" className="w-full gap-2" disabled={submitting}>
-                {submitting ? <Loader2 className="size-4 animate-spin" /> : <Smartphone className="size-4" />}
+                {submitting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Smartphone className="size-4" />
+                )}
                 Pagar {mzn(Number(product.price))}
               </Button>
 
