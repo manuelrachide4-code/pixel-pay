@@ -2,7 +2,17 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, Download, GraduationCap, Loader2, Lock, ShieldCheck, Smartphone } from "lucide-react";
+import {
+  CheckCircle2,
+  Download,
+  GraduationCap,
+  Loader2,
+  Lock,
+  Mail,
+  MessageCircle,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { startCheckout, getPaymentStatus, getPublicProduct, getDelivery } from "@/lib/checkout.functions";
@@ -34,16 +44,14 @@ export const Route = createFileRoute("/c/$slug")({
 });
 
 const methods = [
-  { id: "MPESA", label: "M-Pesa", logo: mpesaLogo.url },
-  { id: "EMOLA", label: "e-Mola", logo: emolaLogo.url },
-  { id: "MKESH", label: "mKesh", logo: null },
-  { id: "CARD", label: "Cartão", logo: null },
+  { id: "EMOLA", label: "e-Mola", logo: emolaLogo.url, hint: "86 123 4567" },
+  { id: "MPESA", label: "M-Pesa", logo: mpesaLogo.url, hint: "84 123 4567" },
+  { id: "MKESH", label: "mKesh", logo: null, hint: "82 123 4567" },
+  { id: "CARD", label: "Cartão", logo: null, hint: "84 123 4567" },
 ] as const;
 
 const mzn = (v: number) =>
-  new Intl.NumberFormat("pt-MZ", { style: "currency", currency: "MZN", maximumFractionDigits: 0 })
-    .format(v)
-    .replace("MTn", "MZN");
+  `Mt ${new Intl.NumberFormat("pt-MZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v)} MZN`;
 
 function Checkout() {
   const { slug } = Route.useParams();
@@ -55,10 +63,13 @@ function Checkout() {
   const [method, setMethod] = useState<(typeof methods)[number]["id"]>("MPESA");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("258");
+  const [localPhone, setLocalPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [reference, setReference] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("pending");
+
+  const activeMethod = methods.find((m) => m.id === method)!;
+  const phone = `258${localPhone}`;
 
   const {
     data: product,
@@ -72,7 +83,6 @@ function Checkout() {
       try {
         return await fetchProduct({ data: { slug } });
       } catch (serverError) {
-        // Fallback: produtos activos são legíveis publicamente (sem imagem assinada).
         const { data, error } = await supabase
           .from("products")
           .select("name, description, price, currency, product_type")
@@ -102,6 +112,10 @@ function Checkout() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (localPhone.length !== 9) {
+      toast.error("Introduza um número válido com 9 dígitos.");
+      return;
+    }
     setSubmitting(true);
     try {
       const result = await start({
@@ -127,8 +141,8 @@ function Checkout() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto max-w-3xl p-6">
-        <Skeleton className="h-96 w-full rounded-2xl" />
+      <main className="mx-auto max-w-lg p-4">
+        <Skeleton className="h-[32rem] w-full rounded-2xl" />
       </main>
     );
   }
@@ -154,153 +168,196 @@ function Checkout() {
     );
   }
 
+  const price = Number(product.price);
+
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10 sm:py-16">
-      <div className="mb-6 flex items-center gap-2">
+    <main className="mx-auto max-w-lg px-4 pb-16 pt-6">
+      <div className="mb-5 flex items-center justify-center gap-2">
         <BrandMark />
-        <span className="font-display text-lg font-semibold">DropPay Pro</span>
+        <span className="font-display text-base font-semibold">DropPay Pro</span>
       </div>
 
-      {product.image_url ? (
-        <img
-          src={product.image_url}
-          alt={product.name}
-          className="mb-6 aspect-[16/7] w-full rounded-2xl border border-border object-cover"
-        />
-      ) : null}
-
-      <div className="grid gap-6 md:grid-cols-[1fr_320px]">
-        <section className="glass rounded-2xl p-6">
-          {status === "paid" ? (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <CheckCircle2 className="size-10 text-primary" />
-              <h1 className="font-display text-2xl font-semibold">Pagamento confirmado</h1>
-              <p className="text-muted-foreground">Referência {reference}</p>
-
-              {delivery?.downloadUrl ? (
-                <Button variant="hero" className="mt-2 gap-2" asChild>
-                  <a href={delivery.downloadUrl} download>
-                    <Download className="size-4" /> Baixar {delivery.name}
-                  </a>
-                </Button>
-              ) : delivery?.accessUrl ? (
-                <Button variant="hero" className="mt-2 gap-2" asChild>
-                  <a href={delivery.accessUrl} target="_blank" rel="noreferrer">
-                    <GraduationCap className="size-4" /> Aceder à área de membros
-                  </a>
-                </Button>
-              ) : (
-                <p className="text-sm text-muted-foreground">A preparar o seu acesso…</p>
-              )}
-            </div>
-          ) : reference && status === "pending" ? (
-            <div className="flex flex-col items-center gap-3 py-10 text-center">
-              <Loader2 className="size-10 animate-spin text-primary" />
-              <h1 className="font-display text-xl font-semibold">A aguardar confirmação</h1>
-              <p className="text-muted-foreground">
-                Confirme o pagamento no seu telemóvel ({phone}). Referência {reference}.
-              </p>
-            </div>
-          ) : (
-            <form className="space-y-5" onSubmit={submit}>
-              <h1 className="font-display text-xl font-semibold">Finalizar compra</h1>
-
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                {methods.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    onClick={() => setMethod(m.id)}
-                    className={cn(
-                      "rounded-xl border px-3 py-3 text-sm transition-colors",
-                      method === m.id
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    <span className="flex flex-col items-center gap-1.5">
-                      {m.logo ? (
-                        <img src={m.logo} alt={m.label} className="h-7 w-auto rounded-md bg-background object-contain" />
-                      ) : null}
-                      {m.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="cname">Nome completo</Label>
-                <Input id="cname" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cemail">Email</Label>
-                <Input
-                  id="cemail"
-                  type="email"
-                  value={email}
-                  maxLength={255}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cphone">Telemóvel (258XXXXXXXXX)</Label>
-                <Input
-                  id="cphone"
-                  inputMode="numeric"
-                  value={phone}
-                  maxLength={12}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 12))}
-                  required
-                />
-              </div>
-
-              <Button type="submit" variant="hero" className="w-full gap-2" disabled={submitting}>
-                {submitting ? <Loader2 className="size-4 animate-spin" /> : <Smartphone className="size-4" />}
-                Pagar {mzn(Number(product.price))}
-              </Button>
-
-              <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <Lock className="size-3.5" /> Pagamento processado com encriptação de ponta a ponta
-              </p>
-            </form>
-          )}
-
-          {status === "failed" || status === "cancelled" ? (
-            <p className="mt-4 rounded-xl bg-destructive/10 p-3 text-center text-sm text-destructive">
-              Pagamento não concluído. Tente novamente.
-            </p>
-          ) : null}
-        </section>
-
-        <aside className="glass h-fit rounded-2xl p-6">
-          <p className="text-sm text-muted-foreground">Resumo</p>
+      {/* Resumo do produto */}
+      <section className="glass rounded-2xl p-4">
+        <div className="flex items-start gap-3">
           {product.image_url ? (
             <img
               src={product.image_url}
               alt={product.name}
-              loading="lazy"
-              className="mt-3 aspect-video w-full rounded-xl object-cover"
+              className="size-20 shrink-0 rounded-xl border border-border object-cover"
             />
-          ) : null}
-          <p className="mt-2 font-display text-lg font-semibold">{product.name}</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {product.product_type === "curso"
-              ? "Acesso imediato à área de membros após o pagamento"
-              : "Download imediato após o pagamento"}
-          </p>
-          {product.description ? (
-            <p className="mt-2 text-sm text-muted-foreground">{product.description}</p>
-          ) : null}
-          <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
-            <span className="text-sm text-muted-foreground">Total</span>
-            <span className="font-display text-xl font-semibold">{mzn(Number(product.price))}</span>
+          ) : (
+            <div className="flex size-20 shrink-0 items-center justify-center rounded-xl border border-border bg-muted/40">
+              <BrandMark />
+            </div>
+          )}
+          <div className="min-w-0">
+            <h1 className="font-display text-base font-semibold leading-snug">{product.name}</h1>
+            <p className="mt-1 font-display text-xl font-bold text-primary">{mzn(price)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {product.product_type === "curso"
+                ? "Acesso imediato à área de membros após o pagamento"
+                : "Download imediato após o pagamento"}
+            </p>
           </div>
-          <p className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="size-3.5 text-primary" /> Checkout seguro DropPay Pro
+        </div>
+
+        <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Subtotal:</span>
+            <span>{mzn(price)}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Taxas:</span>
+            <span className="text-primary">Grátis</span>
+          </div>
+          <div className="flex items-center justify-between border-t border-border pt-3 font-display text-lg font-semibold">
+            <span>Total:</span>
+            <span className="text-primary">{mzn(price)}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Estados */}
+      {status === "paid" ? (
+        <section className="glass mt-4 flex flex-col items-center gap-3 rounded-2xl p-6 text-center">
+          <CheckCircle2 className="size-10 text-primary" />
+          <h2 className="font-display text-xl font-semibold">Pagamento confirmado</h2>
+          <p className="text-sm text-muted-foreground">Referência {reference}</p>
+          {delivery?.downloadUrl ? (
+            <Button variant="hero" className="mt-2 w-full gap-2" asChild>
+              <a href={delivery.downloadUrl} download>
+                <Download className="size-4" /> Baixar {delivery.name}
+              </a>
+            </Button>
+          ) : delivery?.accessUrl ? (
+            <Button variant="hero" className="mt-2 w-full gap-2" asChild>
+              <a href={delivery.accessUrl} target="_blank" rel="noreferrer">
+                <GraduationCap className="size-4" /> Aceder à área de membros
+              </a>
+            </Button>
+          ) : (
+            <p className="text-sm text-muted-foreground">A preparar o seu acesso…</p>
+          )}
+        </section>
+      ) : reference && status === "pending" ? (
+        <section className="glass mt-4 flex flex-col items-center gap-3 rounded-2xl p-6 text-center">
+          <Loader2 className="size-10 animate-spin text-primary" />
+          <h2 className="font-display text-lg font-semibold">A aguardar confirmação</h2>
+          <p className="text-sm text-muted-foreground">
+            Confirme o pagamento no seu telemóvel ({phone}). Referência {reference}.
           </p>
-        </aside>
-      </div>
+        </section>
+      ) : (
+        <form className="mt-4 space-y-5" onSubmit={submit}>
+          <div className="space-y-2">
+            <Label htmlFor="cname">
+              Nome completo <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <User className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="cname"
+                className="h-12 pl-9"
+                placeholder="Nome completo"
+                value={name}
+                maxLength={120}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="cemail">
+              Email <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="cemail"
+                type="email"
+                className="h-12 pl-9"
+                placeholder="seu@email.com"
+                value={email}
+                maxLength={255}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <MessageCircle className="size-4 text-primary" /> Selecione o método de pagamento{" "}
+              <span className="text-destructive">*</span>
+            </Label>
+            <div className="grid grid-cols-2 gap-3">
+              {methods.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setMethod(m.id)}
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl border px-3 py-3 text-sm transition-colors",
+                    method === m.id
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex size-5 shrink-0 items-center justify-center rounded-full border",
+                      method === m.id ? "border-primary" : "border-border",
+                    )}
+                  >
+                    {method === m.id ? <span className="size-2.5 rounded-full bg-primary" /> : null}
+                  </span>
+                  {m.logo ? (
+                    <img src={m.logo} alt={m.label} className="size-9 rounded-lg bg-background object-contain p-0.5" />
+                  ) : null}
+                  <span className="font-medium">{m.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="cphone">
+              Número {activeMethod.label} <span className="text-destructive">*</span>
+            </Label>
+            <div className="flex h-12 items-center rounded-md border border-input bg-background focus-within:ring-1 focus-within:ring-ring">
+              <span className="flex h-full items-center border-r border-input px-3 text-sm text-muted-foreground">
+                +258
+              </span>
+              <input
+                id="cphone"
+                inputMode="numeric"
+                placeholder={activeMethod.hint}
+                value={localPhone}
+                onChange={(e) => setLocalPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                className="h-full flex-1 bg-transparent px-3 text-sm outline-none placeholder:text-muted-foreground"
+                required
+              />
+            </div>
+          </div>
+
+          <Button type="submit" variant="hero" className="h-12 w-full gap-2 text-base" disabled={submitting}>
+            {submitting ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
+            Pagar {mzn(price)}
+          </Button>
+
+          <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck className="size-3.5 text-primary" /> Pagamento seguro com encriptação de ponta a ponta
+          </p>
+        </form>
+      )}
+
+      {status === "failed" || status === "cancelled" ? (
+        <p className="mt-4 rounded-xl bg-destructive/10 p-3 text-center text-sm text-destructive">
+          Pagamento não concluído. Confirme o número e tente novamente.
+        </p>
+      ) : null}
     </main>
   );
 }
