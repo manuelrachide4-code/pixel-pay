@@ -123,20 +123,40 @@ export const startCheckout = createServerFn({ method: "POST" })
       description: `Pagamento — ${product.name}`,
     });
 
-    const status = result.ok ? (paymoz.readProviderStatus(result.body) ?? "pending") : "failed";
+    const status = result.timedOut
+      ? "pending"
+      : result.ok
+        ? (paymoz.readProviderStatus(result.body) ?? "pending")
+        : (paymoz.readProviderStatus(result.body) ?? "failed");
 
     await supabaseAdmin
       .from("payments")
       .update({
         status,
         provider_payment_id: paymoz.readProviderId(result.body),
-        provider_response: result.body as never,
+        provider_response: (result.body ?? { timeout: true }) as never,
       })
       .eq("reference", reference);
 
-    if (!result.ok) {
+    if (result.timedOut) {
+      return {
+        ok: true as const,
+        reference,
+        status,
+        message: "Confirme o pagamento no seu telemóvel. Vamos verificar o estado automaticamente.",
+      };
+    }
+
+    if (!result.ok || status === "failed") {
       console.error("[PayMoz] direct payment failed", result.status, result.body);
-      return { ok: false as const, reference, status, message: "O provedor recusou o pagamento. Tente novamente." };
+      return {
+        ok: false as const,
+        reference,
+        status: "failed",
+        message:
+          paymoz.readProviderMessage(result.body) ??
+          "O provedor recusou o pagamento. Verifique o número e tente novamente.",
+      };
     }
 
     return { ok: true as const, reference, status, message: "Confirme o pagamento no seu telemóvel." };
