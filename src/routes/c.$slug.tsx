@@ -83,14 +83,16 @@ function Checkout() {
       try {
         return await fetchProduct({ data: { slug } });
       } catch (serverError) {
+        // Fallback to client-side select. Include image_url so the UI can still
+        // show the image when the bucket is public or the path is a public URL.
         const { data, error } = await supabase
           .from("products")
-          .select("name, description, price, currency, product_type")
+          .select("name, description, price, currency, product_type, image_url")
           .eq("slug", slug)
           .eq("is_active", true)
           .maybeSingle();
         if (error) throw serverError;
-        return data ? { ...data, image_url: null as string | null } : null;
+        return data ? { ...data, image_url: data.image_url ?? null } : null;
       }
     },
   });
@@ -289,7 +291,7 @@ function Checkout() {
 
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
-              <MessageCircle className="size-4 text-primary" /> Selecione o método de pagamento{" "}
+              <MessageCircle className="size-4 text-primary" /> Selecione o método de pagamento {" "}
               <span className="text-destructive">*</span>
             </Label>
             <div className="grid grid-cols-2 gap-3">
@@ -361,3 +363,5 @@ function Checkout() {
     </main>
   );
 }
+
+export default Checkout;
